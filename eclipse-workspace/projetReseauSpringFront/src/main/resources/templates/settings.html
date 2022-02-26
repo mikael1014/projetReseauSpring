@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="template.html :: header('Your settings', true)"></head>
+
+<body th:with="utilisateur=${session.utilisateur}">
+
+<div th:replace="template.html :: navbar" ></div>
+<hr/>
+
+<div class="container">
+    <div class="row">
+        <div th:replace="template.html :: menu" ></div>
+
+        <div class="col-md-9">
+            <h2 th:text="#{settings.avatar}">Your avatar.</h2>
+            <div class="profile-block">
+                <div>
+                    <div class="image-drop border-dotted" ondrop="dragAndDrop(event)" ondragover="dragEnter(event)"
+                         ondragenter="dragEnter(event)" ondragleave="dragLeave(event)">
+                        <p class="drop-text" th:text="#{settings.drop.image}">Drop your image here.</p>
+                    </div>
+                    <div class="btn-vertical">
+                        <button class="btn btn-lg btn-success btn-left" th:text="#{settings.update.avatar}">Update avatar</button>
+                    </div>
+                    <div class="image-right">
+                        <div class="card">
+                            <img th:if="${utilisateur.image != null}" class="img-circle img-thumbnail social-img"
+                                 th:src="@{'/' + ${utilisateur.image}}" alt="Your profile image">
+                            <img th:unless="${utilisateur.image != null}" class="img-circle img-thumbnail social-img"
+                                 th:src="@{/images/noname.svg}" alt="Your profile image">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="profile-block">
+                <h2 th:text="#{settings.your.profile}">Your profile.</h2>
+                <form th:action="@{/utilisateur/settings}" th:object="${utilisateur}" action="/utilisateur/settings" method="post">
+                    <div class="panel panel-default">
+                        <div class="list-group">
+                            <div class="list-group-item">
+                                <label for="email"><span th:text="#{email}">Email</span>: <input type="text" name="email" class="form-control"
+                                                                 th:value="${utilisateur.email}"
+                                                                 id="email" readonly />
+                                </label>
+                            </div>
+                            <div class="list-group-item">
+                                <label for="firstName"><span th:text="#{firstName}">First name</span>: <input type="text" name="firstName" class="form-control"
+                                                                          th:value="${utilisateur.firstName}"
+                                                                          id="firstName"/>
+                                </label>
+                            </div>
+                            <div class="list-group-item">
+                                <label for="lastName"><span th:text="#{lastName}">Last name</span>: <input type="text" name="lastName" class="form-control"
+                                                                        th:value="${utilisateur.lastName}"
+                                                                        id="lastName"/>
+                                </label>
+                            </div>
+                            <div class="list-group-item">
+                                <label for="datepicker"><span th:text="#{birth.date}">Birth date</span>:
+                                    <input type="text" size="30" class="form-control" name="dob"
+                                           th:value="${#temporals.format(utilisateur.dob, 'dd.MM.yyyy')}"
+                                           id="datepicker">
+                                </label>
+                            </div>
+                            <div class="list-group-item"><span th:text="#{gender}">Gender</span>:
+                                <label class="radio-inline">
+                                    <input type="radio" name="sex" value="Male" th:checked="${utilisateur.sex.equals('MALE')}">
+                                    <span th:text="#{gender.male}">Male</span>
+                                </label>
+                                <label class="radio-inline">
+                                    <input type="radio" name="sex"  value="Female" th:checked="${utilisateur.sex.equals('FEMALE')}">
+                                    <span th:text="#{gender.female}">Female</span>
+                                </label>
+                            </div>
+                            <div class="list-group-item">
+                                <label for="phone"><span th:text="#{phone}">Phone</span>: <input type="text" name="phone" class="form-control"
+                                                                 th:value="${utilisateur.phone}"
+                                                                 id="phone"/>
+                                </label>
+                            </div>
+                        </div>
+                        <input type="hidden" name="id" th:value="${utilisateur.id}" />
+                    </div>
+                    <button type="submit" class="btn btn-lg btn-success"><span th:text="#{settings.change.profile}">Change profile</span></button>
+                </form>
+            </div>
+            <div class="profile-block">
+                <h2>Change password</h2>
+                <form th:action="@{/utilisateur/updatePassword}" th:object="${passwordChangeDTO}" action="/utilisateur/updatePassword" method="POST">
+                    <div class="panel panel-default">
+                        <div class="list-group">
+                            <div class="list-group-item">
+                                <label for="oldPassword">
+                                    <span th:text="#{settings.old.password}">Old Password</span>:
+                                    <input type="password"
+                                           name="oldPassword"
+                                           class="form-control"
+                                           id="oldPassword"/>
+                                </label>
+                                <div th:if="${passwordError}" style="margin-bottom: 10px" class="text-danger">
+                                    <p th:text="#{provide.pas.conf}">You entered wrong old password</p>
+                                </div>
+                                <div th:if="${#fields.hasErrors('oldPassword')}" style="margin-bottom: 10px" class="text-danger">
+                                    <ul>
+                                        <li th:each="err : ${#fields.errors('oldPassword')}" th:text="'Old password: ' + ${err}" />
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="list-group-item">
+                                <label for="password">
+                                    <span th:text="#{settings.new.password}">New Password</span>:
+                                    <input type="password"
+                                           name="password"
+                                           class="form-control"
+                                           id="password"/>
+                                </label>
+                                <div th:if="${#fields.hasErrors('password')}" style="margin-bottom: 10px" class="text-danger">
+                                    <ul>
+                                        <li th:each="err : ${#fields.errors('password')}" th:text="'Password: ' + ${err}" />
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="list-group-item">
+                                <label for="passwordConfirmation">
+                                    <span th:text="#{settings.repeat.password}">Repeat Password</span>:
+                                    <input type="password"
+                                           name="passwordConfirmation"
+                                           class="form-control"
+                                           id="passwordConfirmation"/>
+                                </label>
+                                <div th:if="${#fields.hasErrors('passwordConfirmation')}" style="margin-bottom: 10px" class="text-danger">
+                                    <ul>
+                                        <li th:each="err : ${#fields.errors('passwordConfirmation')}" th:text="'Password confirmation: ' + ${err}" />
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-lg btn-success" th:text="#{settings.change.password}">Change password</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div th:replace="template.html :: footer"></div>
+
+<script src="../static/js/jquery-ui.min.js" th:src="@{/js/jquery-ui.min.js}"></script>
+<script src="../static/js/profile.js" th:src="@{/js/profile.js}"></script>
+<script>
+    $( function() {
+        $.datepicker.regional['ru'] = {
+            closeText: 'Ð—Ð°ÐºÑ€Ñ‹Ñ‚ÑŒ',
+            prevText: 'ÐŸÑ€ÐµÐ´',
+            nextText: 'Ð¡Ð»ÐµÐ´',
+            currentText: 'Ð¡ÐµÐ³Ð¾Ð´Ð½Ñ�',
+            monthNames: ['Ð¯Ð½Ð²Ð°Ñ€ÑŒ','Ð¤ÐµÐ²Ñ€Ð°Ð»ÑŒ','ÐœÐ°Ñ€Ñ‚','Ð�Ð¿Ñ€ÐµÐ»ÑŒ','ÐœÐ°Ð¹','Ð˜ÑŽÐ½ÑŒ',
+                'Ð˜ÑŽÐ»ÑŒ','Ð�Ð²Ð³ÑƒÑ�Ñ‚','Ð¡ÐµÐ½Ñ‚Ñ�Ð±Ñ€ÑŒ','ÐžÐºÑ‚Ñ�Ð±Ñ€ÑŒ','Ð�Ð¾Ñ�Ð±Ñ€ÑŒ','Ð”ÐµÐºÐ°Ð±Ñ€ÑŒ'],
+            monthNamesShort: ['Ð¯Ð½Ð²','Ð¤ÐµÐ²','ÐœÐ°Ñ€','Ð�Ð¿Ñ€','ÐœÐ°Ð¹','Ð˜ÑŽÐ½',
+                'Ð˜ÑŽÐ»','Ð�Ð²Ð³','Ð¡ÐµÐ½','ÐžÐºÑ‚','Ð�Ð¾Ñ�','Ð”ÐµÐº'],
+            dayNames: ['Ð²Ð¾Ñ�ÐºÑ€ÐµÑ�ÐµÐ½ÑŒÐµ','Ð¿Ð¾Ð½ÐµÐ´ÐµÐ»ÑŒÐ½Ð¸Ðº','Ð²Ñ‚Ð¾Ñ€Ð½Ð¸Ðº','Ñ�Ñ€ÐµÐ´Ð°','Ñ‡ÐµÑ‚Ð²ÐµÑ€Ð³','Ð¿Ñ�Ñ‚Ð½Ð¸Ñ†Ð°','Ñ�ÑƒÐ±Ð±Ð¾Ñ‚Ð°'],
+            dayNamesShort: ['Ð²Ñ�Ðº','Ð¿Ð½Ð´','Ð²Ñ‚Ñ€','Ñ�Ñ€Ð´','Ñ‡Ñ‚Ð²','Ð¿Ñ‚Ð½','Ñ�Ð±Ñ‚'],
+            dayNamesMin: ['Ð’Ñ�','ÐŸÐ½','Ð’Ñ‚','Ð¡Ñ€','Ð§Ñ‚','ÐŸÑ‚','Ð¡Ð±'],
+            weekHeader: 'Ð�ÐµÐ´',
+            dateFormat: 'dd.mm.yy',
+            firstDay: 1,
+            isRTL: false,
+            showMonthAfterYear: false,
+            yearSuffix: '',};
+        $.datepicker.setDefaults($.datepicker.regional['ru']);
+        var options = {
+                changeMonth: true,
+                changeYear: true,
+                highlightWeek: true,
+                yearRange: "-100:+0"
+            };
+        $( "#datepicker" ).datepicker(options);
+    } );
+</script>
+
+</body>
+</html>
